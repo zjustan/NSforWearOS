@@ -12,11 +12,11 @@ using System.Text;
 using NSforWearOS;
 namespace controls
 {
-    public class DepartureLayout : View
+    public class DepartureLayout : LinearLayout
     {
-        public DepartureLayout(Context context) : base(context)
+        public DepartureLayout(Context context, LinearLayout tesrt) : base(context)
         {
-            LayoutInflater.From(context).Inflate(Resource.Layout.control_departure, null);
+            LayoutInflater.From(context).Inflate(Resource.Layout.control_departure, tesrt);
         }
     }
 }

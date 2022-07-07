@@ -7,8 +7,8 @@
     <ProjectGuid>{BE726292-F90C-4C99-8F7D-5F15C368D58D}</ProjectGuid>
     <TemplateGuid>{0af826e4-e8b7-435f-b02e-4101b634e385}</TemplateGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>WearOs2</RootNamespace>
-    <AssemblyName>WearOs2</AssemblyName>
+    <RootNamespace>NSforWearOS</RootNamespace>
+    <AssemblyName>NSforWearOS</AssemblyName>
     <Deterministic>True</Deterministic>
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
@@ -59,6 +59,7 @@
     <Compile Include="Models\Departures.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\NSservice.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -106,6 +107,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\control_departure.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\values\attrs.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
