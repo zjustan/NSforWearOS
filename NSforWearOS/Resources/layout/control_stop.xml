@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="@drawable/background"
+    android:gravity="center|center_vertical">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:id="@+id/linearLayout1">
+        <TextView
+            android:text="10:30 +99"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:id="@+id/ArriveTime"
+            android:gravity="center_horizontal|center_vertical" />
+        <TextView
+            android:text="10:30 +99"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center_horizontal|center_vertical"
+            android:visibility="visible"
+            android:id="@+id/DepartTime" />
+    </LinearLayout>
+    <TextView
+        android:text="station"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight=".5"
+        android:gravity="center_horizontal|center_vertical"
+        android:visibility="visible"
+
+        android:id="@+id/StationText" />
+
+</LinearLayout>

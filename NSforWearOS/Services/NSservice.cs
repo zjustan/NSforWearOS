@@ -10,7 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Net.Http;
 using System.IO;
+using NSforWearOS.Models;
 using  NSforWearOS.Models.Departures;
+using  NSforWearOS.Models.Trip;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 
@@ -38,6 +40,23 @@ namespace NSforWearOS.Services
 
             response.EnsureSuccessStatusCode();
 
+            return await deserialize<Departures>(response);
+
+            
+        }
+
+        public static async Task<Journey> GetJourney(Int32 Train )
+        {
+            var request = CreateRequest($"https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/journey?train={Train}");
+            var response = await client.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+
+            return await deserialize<Journey>(response);
+        }
+
+        private static async Task<T> deserialize<T>(HttpResponseMessage response) where T : IPayload
+        {
             string s = await response.Content.ReadAsStringAsync();
 
             var serializer = new JsonSerializer();
@@ -46,13 +65,14 @@ namespace NSforWearOS.Services
             {
                 try
                 {
-
-                return serializer.Deserialize<NSforWearOS.Models.Departures.Root>(jsonTextReader).payload;
+                    Task<T> deserialized = new Task<T>(() => serializer.Deserialize<Root<T>>(jsonTextReader).payload);
+                    deserialized.Start();
+                    return  await deserialized ;
                 }
-                catch(Exception exe)
+                catch (Exception exe)
                 {
 
-                    return null;
+                    return default(T);
                 }
             }
         }

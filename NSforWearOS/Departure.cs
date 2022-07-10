@@ -14,9 +14,9 @@ namespace controls
 {
     public class DepartureLayout : LinearLayout
     {
-        public DepartureLayout(Context context, LinearLayout tesrt) : base(context)
+        public DepartureLayout(Context context, LinearLayout Parent) : base(context)
         {
-            LayoutInflater.From(context).Inflate(Resource.Layout.control_departure, tesrt);
+            LayoutInflater.From(context).Inflate(Resource.Layout.control_departure, Parent);
         }
     }
 }

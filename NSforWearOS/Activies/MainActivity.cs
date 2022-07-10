@@ -5,6 +5,7 @@ using Android.Widget;
 using NSforWearOS.Models.Departures;
 using NSforWearOS.Services;
 using System;
+using System.Linq;
 using static Android.Views.ViewGroup;
 
 namespace NSforWearOS
@@ -26,9 +27,8 @@ namespace NSforWearOS
             EditText = FindViewById<EditText>(Resource.Id.editText1);
              btn = FindViewById<Button>(Resource.Id.button1);
             layout = FindViewById<LinearLayout>(Resource.Id.linearLayout2);
-            btn.Click += SendWebRequest;
+            EditText.AfterTextChanged += SendWebRequest;
 
-            new controls.DepartureLayout(BaseContext,layout);
 
             SetAmbientEnabled();
         }
@@ -57,11 +57,23 @@ namespace NSforWearOS
 
                 Button button = new Button(this);
                 button.Text = dep.direction + "\n " + dep.actualDateTime.ToString("HH:mm") + ", spoor: "+ dep.plannedTrack;
+                button.Click += (s,e) => Button_Click(dep);
                 LayoutParams lp = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent);
                 layout.AddView(button, lp);
             }
             btn.Text = "showing results: " + EditText.Text;
 
+        }
+
+        private void Button_Click(Departure departure)
+        {
+            var intent = new Android.Content.Intent(this, typeof(NSforWearOS.Activies.TripInfoActivity));
+            var bundle = new Bundle();
+            bundle.PutStringArray("stations", departure.routeStations.Select(x => x.mediumName).ToArray());
+            bundle.PutString("direction", departure.direction);
+            bundle.PutInt("TrainId", int.Parse( departure.product.number));
+            intent.PutExtra("RouteData", bundle);
+            StartActivity(intent);
         }
     }
 }

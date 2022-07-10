@@ -1,8 +1,8 @@
 ﻿// Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
+using NSforWearOS.Models.product;
+using NSforWearOS.Models.stations;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-
 namespace NSforWearOS.Models.Departures
 {
 
@@ -18,36 +18,14 @@ namespace NSforWearOS.Models.Departures
         public Product product { get; set; }
         public string trainCategory { get; set; }
         public bool cancelled { get; set; }
-        public List<RouteStation> routeStations { get; set; }
+        public List<MinimalStation> routeStations { get; set; }
         public List<object> messages { get; set; }
         public string departureStatus { get; set; }
     }
 
-    public class Departures
+    public class Departures : IPayload
     {
         public string source { get; set; }
         public List<Departure> departures { get; set; }
-    }
-
-    public class Product
-    {
-        public string number { get; set; }
-        public string categoryCode { get; set; }
-        public string shortCategoryName { get; set; }
-        public string longCategoryName { get; set; }
-        public string operatorCode { get; set; }
-        public string operatorName { get; set; }
-        public string type { get; set; }
-    }
-
-    public class Root
-    {
-        public Departures payload { get; set; }
-    }
-
-    public class RouteStation
-    {
-        public string uicCode { get; set; }
-        public string mediumName { get; set; }
     }
 }
