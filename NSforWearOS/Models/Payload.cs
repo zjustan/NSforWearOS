@@ -11,10 +11,23 @@ using System.Text;
 
 namespace NSforWearOS.Models
 {
-    public class Root<T> where T : IPayload
+    public class Root<T> 
     {
+        public Links links { get; set; }
+
         public T payload { get; set; }
+
+        public Meta meta { get; set; }
     }
+
+    public class Meta
+    {
+    }
+
+    public class Links
+    {
+    }
+
     public interface IPayload { }
 
 }

@@ -15,6 +15,7 @@ using  NSforWearOS.Models.Departures;
 using  NSforWearOS.Models.Trip;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using NSforWearOS.Models.Location;
 
 namespace NSforWearOS.Services
 {
@@ -55,7 +56,29 @@ namespace NSforWearOS.Services
             return await deserialize<Journey>(response);
         }
 
-        private static async Task<T> deserialize<T>(HttpResponseMessage response) where T : IPayload
+
+        public static async Task<List<LocationCollection>> GetPlaces(string? Query = null)
+        {
+            var request = CreateRequest($"https://gateway.apiportal.ns.nl/places-api/v2/places?type=stationV2&q={Query}&limit=99999999");
+            var response = await client.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+
+            return await deserialize<List<LocationCollection>>(response);
+        }
+
+        public static async Task<List<LocationCollection>> GetClosestStation(string Lat, string lng)
+        {
+            var request = CreateRequest($"https://gateway.apiportal.ns.nl/places-api/v2/places?type=stationV2&lat={Lat}&lng={lng}&radius=99999");
+            var response = await client.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+
+            return await deserialize<List<LocationCollection>>(response);
+        }
+
+
+        private static async Task<T> deserialize<T>(HttpResponseMessage response)
         {
             string s = await response.Content.ReadAsStringAsync();
 

@@ -59,6 +59,7 @@
     <Compile Include="Departure.cs" />
     <Compile Include="Activies\MainActivity.cs" />
     <Compile Include="Models\Departures.cs" />
+    <Compile Include="Models\location.cs" />
     <Compile Include="Models\Payload.cs" />
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\Station.cs" />
@@ -112,6 +113,18 @@
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.Core.UI" Version="1.0.0.6" />
     <PackageReference Include="Xamarin.AndroidX.Wear" Version="1.1.0" />
     <PackageReference Include="Xamarin.Android.Wear" Version="2.2.0" />
+    <PackageReference Include="Xamarin.Essentials">
+      <Version>1.7.3</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.GooglePlayServices.Base">
+      <Version>117.6.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.GooglePlayServices.Basement">
+      <Version>117.6.0.4</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.GooglePlayServices.Location">
+      <Version>118.0.0.3</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\control_departure.xml">
@@ -130,11 +143,6 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\ns.png">
-      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\drawable\jessie.jpg">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
     </AndroidResource>
   </ItemGroup>
