@@ -7,6 +7,7 @@ using Android.Support.Wearable.Activity;
 using Android.Util;
 using Android.Widget;
 using NSforWearOS.Models.Departures;
+using NSforWearOS.Models.stations;
 using NSforWearOS.Services;
 using System;
 using System.Linq;
@@ -28,7 +29,9 @@ namespace NSforWearOS
 
         FusedLocationProviderClient fusedLocationProviderClient;
 
-        LocationCallback callback;
+        FusedLocationProviderCallback callback;
+
+     
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -45,7 +48,7 @@ namespace NSforWearOS
             EditText.AfterTextChanged += SendWebRequest;
 
             fusedLocationProviderClient = LocationServices.GetFusedLocationProviderClient(this);
-            callback = new LocationCallback();
+            callback = new FusedLocationProviderCallback(OnLocationResult);
             IsGooglePlayServicesInstalled();
             SetAmbientEnabled();
         }
@@ -81,12 +84,7 @@ namespace NSforWearOS
                                                   .SetInterval(60 * 1000)
                                                   .SetFastestInterval(60 * 1000);
 
-               var task =  fusedLocationProviderClient.RequestLocationUpdatesAsync(locationRequest, callback);
-                task.Wait();
-                if (task.IsFaulted)
-                {
-                    throw task.Exception;
-                }
+                await fusedLocationProviderClient.RequestLocationUpdatesAsync(locationRequest, callback);
              
             }
             catch (FeatureNotSupportedException fnsEx)
@@ -111,14 +109,22 @@ namespace NSforWearOS
                 return;
             }
 
+            
+
+        }
+
+        public async void OnLocationResult(LocationResult location)
+        {
+            Models.Location.Location Station;
+
             try
             {
-                var result = await NSservice.GetClosestStation(location.Latitude.ToString(), location.Longitude.ToString());
+                var result = await NSservice.GetClosestStation(location.Locations[0].Latitude.ToString(),location.Locations[0].Longitude.ToString()) ;
                 Station = result[0].locations[0];
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
-                btn.Text = "station not found"; 
+                btn.Text = "station not found";
                 return;
             }
             Departures departures = null;
@@ -127,14 +133,13 @@ namespace NSforWearOS
 
                 departures = await NSservice.GetDepartures(Station.stationCode);
             }
-            catch
+            catch(Exception exe)
             {
                 btn.Text = "error getting departures";
                 return;
             }
 
             ShowDepartures(departures, Station.name);
-
         }
 
         async void SendWebRequest(object sender, EventArgs args)
@@ -220,9 +225,9 @@ namespace NSforWearOS
     }
     public class FusedLocationProviderCallback : LocationCallback
     {
-        readonly MainActivity activity;
+        readonly Action<LocationResult> activity;
 
-        public FusedLocationProviderCallback(MainActivity activity)
+        public FusedLocationProviderCallback(Action<LocationResult> activity)
         {
             this.activity = activity;
         }
@@ -235,14 +240,8 @@ namespace NSforWearOS
         public override void OnLocationResult(LocationResult result)
         {
             if (result.Locations.Any())
-            {
-                var location = result.Locations.First();
-                Log.Debug("Sample", "The latitude is :" + location.Latitude);
-            }
-            else
-            {
-                // No locations to work with.
-            }
+                activity(result);
+            
         }
     }
 }
