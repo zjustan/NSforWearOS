@@ -17,6 +17,15 @@ namespace NSforWearOS.controls
         TextView ArriveTime;
         TextView DepartTime;
         TextView Station;
+
+        public DateTime ArriveTimeStamp;
+        public DateTime DepartTimeStamp;
+        public string StationName;
+
+        public float Progress { set => bar.Progress = 
+                (int)(value * 100); get => bar.Progress / 100f; }
+
+        private ProgressBar bar;
         public StopControl(Context context, LinearLayout Parent, NSforWearOS.Models.stations.Stop stop )
         {
             view = LayoutInflater.From(context).Inflate(Resource.Layout.control_stop, Parent);
@@ -24,28 +33,31 @@ namespace NSforWearOS.controls
             ArriveTime = view.FindViewById<TextView>(Resource.Id.ArriveTime);
             DepartTime = view.FindViewById<TextView>(Resource.Id.DepartTime);
             Station = view.FindViewById<TextView>(Resource.Id.StationText);
+            bar = view.FindViewById<ProgressBar>(Resource.Id.progressBar1);
 
-           
+
             if (stop.arrivals.Count > 0)
             {
-                
-                ArriveTime.Text = stop.arrivals[0].actualTime.ToString("HH:mm");
+
+                ArriveTimeStamp = stop.arrivals[0].actualTime;
+                ArriveTime.Text = ArriveTimeStamp.ToString("HH:mm");
             }
             else
             {
-                ArriveTime.Visibility = ViewStates.Gone;
+                ArriveTime.Text = "";
             }
             if (stop.departures.Count > 0)
             {
-
-                DepartTime.Text = stop.departures[0].actualTime.ToString("HH:mm");
+                DepartTimeStamp = stop.departures[0].actualTime;
+                DepartTime.Text =DepartTimeStamp.ToString("HH:mm");
             }
             else
             {
-                DepartTime.Visibility = ViewStates.Gone;
+                DepartTime.Text = "";
             }
 
             Station.Text = stop.stop.name;
+            StationName = stop.stop.name;
         }
     }
 }

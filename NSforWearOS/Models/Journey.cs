@@ -1,7 +1,7 @@
 ﻿using NSforWearOS.Models.stations;
 using System.Collections.Generic;
 
-namespace NSforWearOS.Models.Trip
+namespace NSforWearOS.Models.journeys
 {
     public class Journey : NSforWearOS.Models.IPayload
     {

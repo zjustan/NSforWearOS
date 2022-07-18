@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NSforWearOS;
+using Android.Graphics;
+
 namespace controls
 {
     public class DepartureLayout : LinearLayout
@@ -17,6 +19,16 @@ namespace controls
         public DepartureLayout(Context context, LinearLayout Parent) : base(context)
         {
             LayoutInflater.From(context).Inflate(Resource.Layout.control_departure, Parent);
+        }
+
+
+
+
+
+
+        public override void OnDrawForeground(Canvas canvas)
+        {
+            base.OnDrawForeground(canvas);
         }
     }
 }

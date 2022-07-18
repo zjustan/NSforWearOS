@@ -14,11 +14,16 @@ using System.Linq;
 using System.Threading;
 using Xamarin.Essentials;
 using static Android.Views.ViewGroup;
+using static Android.Views.View;
+using Android.Views;
+using Android.Content;
+using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace NSforWearOS
 {
     [Activity(Label = "@string/app_name", MainLauncher = true)]
-    public class MainActivity : WearableActivity
+    public class MainActivity : WearableActivity, IOnTouchListener
     {
         TextView textView;
         ImageView imageView;
@@ -31,7 +36,7 @@ namespace NSforWearOS
 
         FusedLocationProviderCallback callback;
 
-     
+        HorizontalScrollView scrollView;
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -40,10 +45,25 @@ namespace NSforWearOS
             Xamarin.Essentials.Platform.Init(this, bundle);
 
 
+            LinearLayout lin = FindViewById<LinearLayout>(Resource.Id.HorizontalLinearLayout);
+
+            for (int i = 0; i < lin.ChildCount; i++)
+            {
+                var view = lin.GetChildAt(i);
+
+                view.LayoutParameters.Width = Resources.DisplayMetrics.WidthPixels;
+                view.SetMinimumWidth(Resources.DisplayMetrics.WidthPixels);
+            }
+
+            scrollView = FindViewById<HorizontalScrollView>(Resource.Id.MainHorizontal);
+            scrollView.SetOnTouchListener(this);
+
+            new NSforWearOS.Activies.Partials.StationInfo(this, FindViewById<ScrollView>(Resource.Id.StationInfo));
+            new NSforWearOS.Activies.Partials.TripSearchControl(this, FindViewById<ScrollView>(Resource.Id.TripSearch));
 
             imageView = FindViewById<ImageView>(Resource.Id.image);
             EditText = FindViewById<EditText>(Resource.Id.editText1);
-             btn = FindViewById<Button>(Resource.Id.button1);
+            btn = FindViewById<Button>(Resource.Id.button1);
             layout = FindViewById<LinearLayout>(Resource.Id.linearLayout2);
             EditText.AfterTextChanged += SendWebRequest;
 
@@ -53,6 +73,21 @@ namespace NSforWearOS
             SetAmbientEnabled();
         }
 
+
+        public bool OnTouch(View v, MotionEvent e)
+        {
+            if (e.Action == MotionEventActions.Up)
+            {
+
+                int Width = Resources.DisplayMetrics.WidthPixels;
+                float Divided = (float)scrollView.ScrollX / Resources.DisplayMetrics.WidthPixels;
+
+                scrollView.SmoothScrollTo((int)Math.Round(Divided) * Width, 0);
+
+                return true;
+            }
+            return false;
+        }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -63,6 +98,8 @@ namespace NSforWearOS
         {
             FindByWebRequest();
             base.OnStart();
+
+
         }
 
 
@@ -85,7 +122,7 @@ namespace NSforWearOS
                                                   .SetFastestInterval(60 * 1000);
 
                 await fusedLocationProviderClient.RequestLocationUpdatesAsync(locationRequest, callback);
-             
+
             }
             catch (FeatureNotSupportedException fnsEx)
             {
@@ -109,7 +146,7 @@ namespace NSforWearOS
                 return;
             }
 
-            
+
 
         }
 
@@ -119,7 +156,7 @@ namespace NSforWearOS
 
             try
             {
-                var result = await NSservice.GetClosestStation(location.Locations[0].Latitude.ToString(),location.Locations[0].Longitude.ToString()) ;
+                var result = await NSservice.GetClosestStation(location.Locations[0].Latitude.ToString(), location.Locations[0].Longitude.ToString());
                 Station = result[0].locations[0];
             }
             catch (Exception exe)
@@ -133,7 +170,7 @@ namespace NSforWearOS
 
                 departures = await NSservice.GetDepartures(Station.stationCode);
             }
-            catch(Exception exe)
+            catch (Exception exe)
             {
                 btn.Text = "error getting departures";
                 return;
@@ -172,33 +209,53 @@ namespace NSforWearOS
             ShowDepartures(departures, Station.name);
 
         }
-
+        System.Timers.Timer timer;
         private void ShowDepartures(Departures departures, string stationname)
         {
 
             layout.RemoveAllViews();
-            foreach (var dep in departures.departures)
-            {
 
+            (Button, Departure)[] buttons = new(Button, Departure)[departures.departures.Count];
+            for (int i = 0; i < departures.departures.Count; i++)
+            {
+                Departure dep = departures.departures[i];
                 Button button = new Button(this);
-                button.Text = dep.direction + "\n " + dep.actualDateTime.ToString("HH:mm") + ", spoor: " + dep.plannedTrack;
                 button.Click += (s, e) => Button_Click(dep);
                 LayoutParams lp = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent);
                 layout.AddView(button, lp);
+                buttons[i] = (button, dep);
             }
+
+            Updatetext(buttons);
+            timer = new System.Timers.Timer(1000);
+            timer.Elapsed += (e, x) => Updatetext(buttons);
+            timer.AutoReset = true;
+            timer.Enabled = true;
             btn.Text = "showing results: " + stationname;
         }
 
+
+        private void Updatetext((Button button, Departure departure)[] values)
+        {
+            foreach (var value in values)
+            {
+                string topText = value.departure.direction;
+
+                int timeLeft = (int)(value.departure.actualDateTime - DateTime.Now).TotalMinutes;
+                string Time = (timeLeft < 20) ? (timeLeft < 1)  ? ">1 min"  : timeLeft + " min" : value.departure.actualDateTime.ToString("HH:mm");
+                value.button.Text = topText + "\n " + Time  + ", spoor: " + value.departure.plannedTrack;
+            }
+        }
         private void Button_Click(Departure departure)
         {
-            var intent = new Android.Content.Intent(this, typeof(NSforWearOS.Activies.TripInfoActivity));
+            var intent = new Android.Content.Intent(this, typeof(NSforWearOS.Activies.JourneyInfoActivity));
             var bundle = new Bundle();
             bundle.PutStringArray("stations", departure.routeStations.Select(x => x.mediumName).ToArray());
             bundle.PutString("direction", departure.direction);
-            bundle.PutInt("TrainId", int.Parse( departure.product.number));
+            bundle.PutInt("TrainId", int.Parse(departure.product.number));
             intent.PutExtra("RouteData", bundle);
             StartActivity(intent);
-        
+
         }
 
         bool IsGooglePlayServicesInstalled()
@@ -222,6 +279,9 @@ namespace NSforWearOS
 
             return false;
         }
+
+
+
     }
     public class FusedLocationProviderCallback : LocationCallback
     {
@@ -241,7 +301,7 @@ namespace NSforWearOS
         {
             if (result.Locations.Any())
                 activity(result);
-            
+
         }
     }
 }

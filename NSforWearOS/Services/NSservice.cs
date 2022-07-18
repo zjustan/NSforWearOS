@@ -12,7 +12,8 @@ using System.Net.Http;
 using System.IO;
 using NSforWearOS.Models;
 using  NSforWearOS.Models.Departures;
-using  NSforWearOS.Models.Trip;
+using  NSforWearOS.Models.journeys;
+using  NSforWearOS.Models.trips;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using NSforWearOS.Models.Location;
@@ -22,6 +23,7 @@ namespace NSforWearOS.Services
     public static class NSservice
     {
         private static HttpClient client;
+        private static TripAdvices LastAdvices;
         static NSservice()
         {
             client = new HttpClient();
@@ -54,6 +56,22 @@ namespace NSforWearOS.Services
             response.EnsureSuccessStatusCode();
 
             return await deserialize<Journey>(response);
+        }
+
+        public static async Task<TripAdvices> GetTripAdvices(string fromStationCode, string ToStationCode)
+        {
+            var request = CreateRequest($"https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips?fromStation={fromStationCode}&toStation={ToStationCode}");
+            var response = await client.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+
+            LastAdvices = await deserializeAsType<TripAdvices>(response);
+            return LastAdvices;
+        } 
+
+        public static Trip GetChachedTrip(int idx)
+        {
+            return LastAdvices.trips.Find(x => x.idx == idx);
         }
 
 
@@ -91,6 +109,28 @@ namespace NSforWearOS.Services
                     Task<T> deserialized = new Task<T>(() => serializer.Deserialize<Root<T>>(jsonTextReader).payload);
                     deserialized.Start();
                     return  await deserialized ;
+                }
+                catch (Exception exe)
+                {
+
+                    return default(T);
+                }
+            }
+        }
+
+        private static async Task<T> deserializeAsType<T>(HttpResponseMessage response)
+        {
+            string s = await response.Content.ReadAsStringAsync();
+
+            var serializer = new JsonSerializer();
+            using (var sr = new StringReader(s))
+            using (var jsonTextReader = new JsonTextReader(sr))
+            {
+                try
+                {
+                    Task<T> deserialized = new Task<T>(() => serializer.Deserialize<T>(jsonTextReader));
+                    deserialized.Start();
+                    return await deserialized;
                 }
                 catch (Exception exe)
                 {

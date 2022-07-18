@@ -1,42 +1,95 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.OS;
+using Android.Runtime;
 using Android.Support.Wearable.Activity;
+using Android.Views;
 using Android.Widget;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NSforWearOS.Models.trips;
 using NSforWearOS.Services;
-using static Android.Views.ViewGroup;
+
 namespace NSforWearOS.Activies
 {
-    [Activity(Label = "TipInfoActivity")]
+    [Activity(Label = "TripInfoActivity")]
     public class TripInfoActivity : WearableActivity
     {
+        TextView MainText;
+        TextView DateText;
+
+        TextView TotalTimeText;
+        TextView TimeStampText;
+        Trip Trip;
+        int IdX;
+
+        private static readonly Dictionary<DayOfWeek, string> ShortDayOfweek = new Dictionary<DayOfWeek, string>
+
+        {
+            { DayOfWeek.Monday,"mo" },
+             { DayOfWeek.Tuesday,"tue" },
+             { DayOfWeek.Wednesday,"wed" },
+             { DayOfWeek.Thursday,"thu" },
+             { DayOfWeek.Friday,"fri" },
+             { DayOfWeek.Saturday,"sat" },
+             { DayOfWeek.Sunday,"sun" }
+        };
+
+        private static readonly List<string> ShortMonth = new List<string>
+        {
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sept",
+            "Oct",
+            "Nov",
+            "Dec",
+        };
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            SetContentView(Resource.Layout.activity_tripInfo);
             base.OnCreate(savedInstanceState);
+            SetContentView(Resource.Layout.activity_TripInfo);
+            var bundle = Intent.GetBundleExtra("TripData");
+            IdX = bundle.GetInt("IdX");
+            Trip = NSservice.GetChachedTrip(IdX);
             // Create your application here
-            var bundle = Intent.GetBundleExtra("RouteData");
 
 
-            TextView MainText = FindViewById<TextView>(Resource.Id.MainText);
-            MainText.Text = bundle.GetString("direction");
+            MainText = FindViewById<TextView>(Resource.Id.UpText);
+            MainText.Selected = true;
 
-            TextView subText = FindViewById<TextView>(Resource.Id.SubText);
-            subText.Text = string.Join(", ", bundle.GetStringArray("stations"));
-            subText.Selected = true;
+            DateText = FindViewById<TextView>(Resource.Id.Date);
 
-            GetTrip(bundle.GetInt("TrainId"));
+            TotalTimeText = FindViewById<TextView>(Resource.Id.TotalTime);
+            TimeStampText = FindViewById<TextView>(Resource.Id.timeSpanTime);
+
+
+            FIllInfo(Trip);
+
         }
-
-        public async void GetTrip(int train)
+        public void FIllInfo(Trip trip)
         {
-            LinearLayout layout = FindViewById<LinearLayout>(Resource.Id.TripDetailLayout);
-            var trip = await NSservice.GetJourney(train);
+            MainText.Text = $"{Trip.legs.First().origin.name}→{Trip.legs.Last().destination.name}";
 
-            layout.RemoveAllViews();
-            foreach (var stop in trip.stops)
-                if(stop.status != "PASSING")
-                new NSforWearOS.controls.StopControl(this, layout, stop);
-            
+            DateTime DepartTime = trip.legs.First().origin.plannedDateTime;
+            DateTime ArriveTime = trip.legs.Last().destination.plannedDateTime;
+
+            DateText.Text = $"{ShortDayOfweek[DepartTime.DayOfWeek]} {DepartTime.Day} {ShortMonth[ DepartTime.Month - 1]}";
+
+            TimeSpan TotalTime = ArriveTime - DepartTime;
+            TotalTimeText.Text = ((Math.Floor(TotalTime.TotalHours) > 0) ? $"{Math.Floor(TotalTime.TotalHours)}h " : string.Empty) + ((TotalTime.Minutes != 0) ? $"{TotalTime.Minutes}m. " : ".");
+
+            TimeStampText.Text = $"{DepartTime.ToString("HH:mm")}→{ArriveTime.ToString("HH:mm")}";
+
         }
+
+
     }
 }
